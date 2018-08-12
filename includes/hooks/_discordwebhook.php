@@ -23,6 +23,7 @@ $GLOBALS['hook_colors'] = [
 ];
 
 // These are all the hooks that you can enable/disable
+$show_pendingorder = true; // When the order is pending
 $show_openedtickets = true; // When the ticket is created
 $show_closedtickets = true; // When the ticket closes
 $show_userreplies = true; // When the user replies to a ticket
@@ -69,6 +70,32 @@ function createRequest($hook_content){
 
     curl_close($ch);
 }
+
+/**
+ * Triggers on a order being pending
+ *
+ * @hook PendingOrder
+ * @var $hook_content
+ * @return createRequest
+ */
+if($show_pendingorder === true):
+    add_hook('PendingOrder', 1, function($vars) {
+        $hook_content = [
+            'username' => $GLOBALS['hook_username'],
+            'embeds' => [
+                [
+                    'url' => $GLOBALS['hook_baseurl']."orders.php?action=view&id=".$vars['orderid'],
+                    'title' => "Order #".$vars['orderid'],
+                    'description' => 'Order is pending...', // whmcs doesn't give any other info than ticketid srry
+                    'type' => 'rich',
+                    'color' =>  $GLOBALS['hook_colors']['danger'],
+                    'timestamp' => date(DateTime::ISO8601),
+                ],
+            ]
+        ];
+        createRequest($hook_content);
+    });
+endif;
 
 /**
  * Triggers on a ticket being opened
